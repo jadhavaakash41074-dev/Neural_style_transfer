@@ -93,6 +93,8 @@ class UploadForm(FlaskForm):
     )
     submit = SubmitField("Transfer Style")
 
+torch.set_num_threads(1)
+torch.set_num_interop_threads(1)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -132,6 +134,8 @@ print(
 
 encoder.eval()
 decoder.eval()
+encoder.requires_grad_(False)
+decoder.requires_grad_(False)
 
 
 def allowed_file(filename):
@@ -144,7 +148,7 @@ def allowed_file(filename):
 
 def style_transfer(content_image, style_image, alpha):
     image_transform = transforms.Compose([
-        transforms.Resize(512),
+        transforms.Resize(256),
         transforms.ToTensor()
     ])
 
