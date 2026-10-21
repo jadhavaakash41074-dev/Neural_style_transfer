@@ -15,6 +15,20 @@ from Utils.models import VGGEncoder, Decoder
 from Utils.utils import adaptive_instance_normalization
 from Utils.utils import cal_mean_std 
 
+import os
+import urllib.request
+
+# Check and download vgg_normalised.pth if missing (for Render deployment)
+VGG_PATH = 'vgg_normalised.pth'
+if not os.path.exists(VGG_PATH):
+    print("vgg_normalised.pth not found locally. Downloading from Google Drive...")
+    url = "https://drive.google.com/uc?export=download&id=1Vp155Ft7Ps7f01SCUtTqUu7bBmEFqNXb"
+    try:
+        urllib.request.urlretrieve(url, VGG_PATH)
+        print("Download complete successfully!")
+    except Exception as e:
+        print(f"Error downloading the file: {e}")
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'supersecretkey'
