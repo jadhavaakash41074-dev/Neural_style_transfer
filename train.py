@@ -167,7 +167,7 @@ def main():
         checkpoint = torch.load(
             checkpoint_path,
             map_location=device,
-            weights_only=True
+            weights_only=False
         )
 
         decoder.load_state_dict(checkpoint['decoder_state_dict'])
