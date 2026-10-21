@@ -67,7 +67,7 @@ VGG_PATH_FULL = os.path.join(BASE_DIR, 'vgg_normalised.pth')
 encoder = VGGEncoder(VGG_PATH_FULL).to(device)
 decoder = Decoder().to(device)
 
-ckpt = torch.load(CKPT_PATH, map_location=device, weights_only=True)
+ckpt = torch.load(CKPT_PATH, map_location=device, weights_only=False)
 decoder.load_state_dict(ckpt['decoder_state_dict'])
 print(f"Model loaded | epoch: {ckpt.get('epoch')} | device: {device}")
 
