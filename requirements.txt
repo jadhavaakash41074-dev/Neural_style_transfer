@@ -1,3 +1,4 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
 Flask
 Flask_Bootstrap
 flask_wtf==1.2.2
