@@ -9,25 +9,39 @@ from wtforms.validators import InputRequired
 from PIL import Image
 from torchvision import transforms
 import io
+import urllib.request
 
 # Import your existing AdaIN code
 from Utils.models import VGGEncoder, Decoder
 from Utils.utils import adaptive_instance_normalization
 from Utils.utils import cal_mean_std 
 
-import os
-import urllib.request
-
-# Check and download vgg_normalised.pth if missing (for Render deployment)
+# --- AUTO DOWNLOAD VGG WEIGHTS ---
 VGG_PATH = 'vgg_normalised.pth'
 if not os.path.exists(VGG_PATH):
     print("vgg_normalised.pth not found locally. Downloading from Google Drive...")
-    url = "https://drive.google.com/uc?export=download&id=1Vp155Ft7Ps7f01SCUtTqUu7bBmEFqNXb"
+    vgg_url = "https://drive.google.com/uc?export=download&id=1Vp155Ft7Ps7f01SCUtTqUu7bBmEFqNXb"
     try:
-        urllib.request.urlretrieve(url, VGG_PATH)
-        print("Download complete successfully!")
+        urllib.request.urlretrieve(vgg_url, VGG_PATH)
+        print("VGG weights download complete successfully!")
     except Exception as e:
-        print(f"Error downloading the file: {e}")
+        print(f"Error downloading VGG weights: {e}")
+
+# --- AUTO DOWNLOAD DECODER CHECKPOINT ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CKPT_DIR = os.path.join(BASE_DIR, 'experiment', 'adain_60-100')
+os.makedirs(CKPT_DIR, exist_ok=True)
+CKPT_PATH = os.path.join(CKPT_DIR, 'latest_checkpoint.pt')
+
+if not os.path.exists(CKPT_PATH):
+    print("latest_checkpoint.pt not found locally. Downloading from Google Drive...")
+    # Formatted direct download link from your provided Google Drive ID
+    ckpt_url = "https://drive.google.com/uc?export=download&id=1oHt4zqCDaiFymw5mDHyau725JYhfEABp"
+    try:
+        urllib.request.urlretrieve(ckpt_url, CKPT_PATH)
+        print("Decoder checkpoint download complete successfully!")
+    except Exception as e:
+        print(f"Error downloading decoder checkpoint: {e}")
 
 
 app = Flask(__name__)
@@ -48,11 +62,9 @@ class UploadForm(FlaskForm):
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-VGG_PATH = os.path.join(BASE_DIR, 'vgg_normalised.pth')
-CKPT_PATH = os.path.join(BASE_DIR, 'experiment', 'adain_60-100', 'latest_checkpoint.pt')
+VGG_PATH_FULL = os.path.join(BASE_DIR, 'vgg_normalised.pth')
 
-encoder = VGGEncoder(VGG_PATH).to(device)
+encoder = VGGEncoder(VGG_PATH_FULL).to(device)
 decoder = Decoder().to(device)
 
 ckpt = torch.load(CKPT_PATH, map_location=device, weights_only=True)
@@ -98,7 +110,6 @@ def save_image(image, path):
     image = image.clamp(0, 1)
     image = transforms.ToPILImage()(image)
     image.save(path)
-
 
 
 @app.route('/', methods=['GET', 'POST'])
